@@ -42,7 +42,7 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir um pull request 
 
 ## Autor
 
-Este projeto foi desenvolvido por [guilhermesob](https://github.com/guilhermesob)).
+Este projeto foi desenvolvido por [guilhermesob](https://github.com/guilhermesob).
 
 ## Licença
 
