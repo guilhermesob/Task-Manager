@@ -30,8 +30,8 @@ defmodule TaskManager do
  end
 
  defp generate_id() do
-    Process.registered()[:task_id] ||= 0
-    Process.registered()[:task_id] = Process.registered()[:task_id] + 1
+    # Use a simple counter for generating IDs
+    Agent.get_and_update(__MODULE__, fn count -> {count, count + 1} end)
  end
 end
 
@@ -85,9 +85,14 @@ defmodule TaskManagerCLI do
     IO.puts("Enter the ID of the task to mark as completed:")
     id = IO.gets("") |> String.trim() |> String.to_integer()
 
-    updated_tasks = TaskManager.update_task(tasks, id)
-    IO.puts("Task marked as completed.")
-    updated_tasks
+    if task_exists?(tasks, id) do
+      updated_tasks = TaskManager.update_task(tasks, id)
+      IO.puts("Task marked as completed.")
+      updated_tasks
+    else
+      IO.puts("Task not found. Please try again.")
+      tasks
+    end
  rescue
     ArgumentError -> IO.puts("Invalid ID. Please try again.")
     tasks
@@ -97,9 +102,14 @@ defmodule TaskManagerCLI do
     IO.puts("Enter the ID of the task to delete:")
     id = IO.gets("") |> String.trim() |> String.to_integer()
 
-    updated_tasks = TaskManager.delete_task(tasks, id)
-    IO.puts("Task deleted.")
-    updated_tasks
+    if task_exists?(tasks, id) do
+      updated_tasks = TaskManager.delete_task(tasks, id)
+      IO.puts("Task deleted.")
+      updated_tasks
+    else
+      IO.puts("Task not found. Please try again.")
+      tasks
+    end
  rescue
     ArgumentError -> IO.puts("Invalid ID. Please try again.")
     tasks
@@ -109,6 +119,13 @@ defmodule TaskManagerCLI do
     IO.puts("Exiting...")
     :ok
  end
+
+ defp task_exists?(tasks, id) do
+    Enum.any?(tasks, fn task -> task.id == id end)
+ end
 end
+
+# Initialize the counter for task IDs
+Agent.start_link(fn -> 0 end, name: __MODULE__)
 
 TaskManagerCLI.start()
